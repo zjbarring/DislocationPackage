@@ -6,4 +6,3 @@ u =  b3/2/pi* (theta-phs3)+ b3/2/pi*(sin(2*(theta-phs3))/4/(1-nu)) + ...
     b2/2/pi*(cos(2*(theta-phs2))/4/(1-nu)) + b1/2/pi*(theta-phs1) + vshift;
 
 end
-
