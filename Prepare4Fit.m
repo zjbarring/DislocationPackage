@@ -22,7 +22,7 @@ if(clustering==0) %So we can easily skip if the as grabbed data is periodic and 
     return %we don't need to perform clustering if data is already good, so exit
 end
 
-idx = clusterdata(dataMatrix, 2);
+idx = clusterdata(dataMatrix, clustering);
 
 numClusters = max(idx);
 

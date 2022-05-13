@@ -6,12 +6,12 @@ close all; clear
 %integer location of the dislocation core in question. Used to access
 %correct fitting data saved in \Dislocation Fitting Data\##_##_##_[2-4].mat
 x_loc = 85;
-y_loc = 107;
-z_loc = 95;
+y_loc = 61;
+z_loc = 70;
 
 %Shortens the Burgers vector by this factor, ie turning a[111] to a/3[111]
 %Graphically the slope is ~1/prefactor
-prefactor = 3;
+prefactor = 6;
 
 %Define lattice and reciprocal lattice - Currently the conventional GaAs cell
 %Use the lattice used to index the reflecitons
