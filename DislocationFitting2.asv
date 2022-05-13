@@ -6,7 +6,7 @@ close all; clear
 %integer location of the dislocation core in question. Used to access
 %correct fitting data saved in \Dislocation Fitting Data\##_##_##_[2-4].mat
 x_loc = 85;
-y_loc = 107;
+y_loc = 106;
 z_loc = 95;
 
 %Shortens the Burgers vector by this factor, ie turning a[111] to a/3[111]
@@ -22,7 +22,7 @@ lat.alpha = pi/2;
 lat.beta = pi/2;
 lat.gamma = pi/2;
 
-nu =0.23; %Poisson's ratio of the material
+nu =0.21; %Poisson's ratio of the material
 
 recip = ReciprocalTransform(lat);
 
@@ -38,8 +38,8 @@ load3 = load(strcat('Dislocation Fitting Data\',int2str(x_loc),'_',...
     int2str(y_loc),'_',int2str(z_loc),'_4'));
 
 %prepare all the data in a single structure for fitting purposes
-data.angles = [load1.data.angles; load2.data.angles; load3.data.angles];
-data.values = double([load1.data.values; load2.data.values; load3.data.values]);
+data.angles = [load1.data.angles, load2.data.angles, load3.data.angles];
+data.values = double([load1.data.values, load2.data.values, load3.data.values]);
 
 %Convert phase values to displacement
 data.values = data.values/2/pi*(5.75/2);
@@ -47,7 +47,7 @@ data.values = data.values/2/pi*(5.75/2);
 %Now parameter that can be tweaked for fitting, depending on other data
 %available
 
-Dsl_Line = [1 0 0]; %Dislocation line, normalized later in the script
+Dsl_Line = [1 1 1]; %Dislocation line, normalized later in the script
  
 Burgers_ciel = 4.1; %Maximum allowed Burger vector length, used to favor low energy dislocations
 
