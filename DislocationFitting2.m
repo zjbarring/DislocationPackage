@@ -4,37 +4,37 @@ close all; clear
 %% Define variables
 
 %integer location of the dislocation core in question. Used to access
-%correct fitting data saved in \Dislocation Fitting Data\##_##_##_[2-4].mat
-x_loc = 85;
-y_loc = 61;
-z_loc = 70;
+%correct fitting data saved in \Dislocation Fitting Data\BWO_333\##_##_##_[2-4].mat
+x_loc = 72;
+y_loc = 62;
+z_loc = 61;
 
 %Shortens the Burgers vector by this factor, ie turning a[111] to a/3[111]
 %Graphically the slope is ~1/prefactor
-prefactor = 6;
+prefactor = 4;
 
 %Define lattice and reciprocal lattice - Currently the conventional GaAs cell
 %Use the lattice used to index the reflecitons
-lat.a = 5.75;
-lat.b = 5.75;
-lat.c = 5.75;
+lat.a = 5.49;
+lat.b = 5.52;
+lat.c = 17.11;
 lat.alpha = pi/2;
 lat.beta = pi/2;
 lat.gamma = pi/2;
 
-nu =0.23; %Poisson's ratio of the material
+nu =0.4; %Poisson's ratio of the material
 
 recip = ReciprocalTransform(lat);
 
-G_hkl = recip.c*2;%Reciprocal lattice vector from scattering; only direction matters
+G_hkl = recip.c*6;%Reciprocal lattice vector from scattering; only direction matters
 
 %load in Data for fitting - Use concentric circle plots around a
 %dislocation. The script is currently written for phase maps.
-load1 = load(strcat('Dislocation Fitting Data\',int2str(x_loc),'_',...
+load1 = load(strcat('Dislocation Fitting Data\BWO_333\',int2str(x_loc),'_',...
     int2str(y_loc),'_',int2str(z_loc),'_2'));
-load2 = load(strcat('Dislocation Fitting Data\',int2str(x_loc),'_',...
+load2 = load(strcat('Dislocation Fitting Data\BWO_333\',int2str(x_loc),'_',...
     int2str(y_loc),'_',int2str(z_loc),'_3'));
-load3 = load(strcat('Dislocation Fitting Data\',int2str(x_loc),'_',...
+load3 = load(strcat('Dislocation Fitting Data\BWO_333\',int2str(x_loc),'_',...
     int2str(y_loc),'_',int2str(z_loc),'_4'));
 
 %prepare all the data in a single structure for fitting purposes
@@ -42,14 +42,14 @@ data.angles = [load1.data.angles; load2.data.angles; load3.data.angles];
 data.values = double([load1.data.values; load2.data.values; load3.data.values]);
 
 %Convert phase values to displacement
-data.values = data.values/2/pi*(5.75/2);
+data.values = data.values/2/pi*2.85;
 
 %Now parameter that can be tweaked for fitting, depending on other data
 %available
 
-Dsl_Line = [1 0 0]; %Dislocation line, normalized later in the script
+Dsl_Line = [1 1 0]; %Dislocation line, normalized later in the script
  
-Burgers_ciel = 4.1; %Maximum allowed Burger vector length, used to favor low energy dislocations
+Burgers_ciel = 10; %Maximum allowed Burger vector length, used to favor low energy dislocations
 
 rmse_margin = 0.1; %How much larger the RMSE can be than the best value and still 
                     %display; loosen this if the only fits displayed aren't
@@ -60,6 +60,8 @@ rmse_margin = 0.1; %How much larger the RMSE can be than the best value and stil
 YRange = [-2,2];
 %Enable or disable error bars
 ErrBars = boolean(false);
+
+UnprocDir = 'Dislocation Fitting Data\BWO_333\Unproc-images';
 
 
 
@@ -82,7 +84,6 @@ b3 = 0;
 
 
 
-
 %% Iterate through all the reasonable Burgers vectors - Don't Edit Except Index Bounds
 for i=-2:2
 
@@ -96,9 +97,6 @@ for i=-2:2
             d = d/norm(d);
             b = ObjectiveCoordTransform(lat, [i j k])/prefactor; %b is burgers vector
             
-%             CosTheta = max(min(dot(u,b)/(norm(u)*norm(b)),1),-1);
-%             ThetaInDegrees = real(acosd(CosTheta));
-%             
             screw = dot(b,d).*d; %Screw component in vector form
             
             edge = b - screw; %Edge component is mixed minus screw
@@ -124,9 +122,6 @@ for i=-2:2
             phs3 = 0;
             vshift = 0;
                         
-%             %This line probably needs future proofing for lines other than
-%             %[001]
-%             if (i==0 && j==0); continue; end %Don't fit these ones because it breaks
             
             %Set up this curve for fitting
             curve = fittype(@(phs1, phs2, phs3, vshift, theta) DislocationDisplacement(theta, b1, b2, b3, nu, phs1, phs2, phs3, vshift)...
@@ -136,9 +131,9 @@ for i=-2:2
             options.StartPoint = [0,0,0,0];
             options.Lower = [-2*pi -2*pi -2*pi -norm(G_hkl)/2];
             options.Upper = [2*pi 2*pi 2*pi norm(G_hkl)/2];
-           
+            
             [currentfit, gof] = fit(data.angles, data.values, curve, options);
-                
+            
             allfits(m).coeffs = coeffvalues(currentfit);
             allfits(m).fits = currentfit;
             allfits(m).gof = gof;
@@ -199,21 +194,11 @@ for i=1:125 %iterate through all the fits
     tempgof = allfits(i).gof; %retrieve gof data for fit i; kind of a janky work around to access data 
                                 %stored in a substructure
     
-    
-    
     if (tempgof.rmse - currentbest_rmse) < rmse_margin%check if iteration is best fit
         
         figure;
         hold on;
         
-        %calculate the error propogation based on error in radius,
-        %normalized by radius
-%         error1(1:length(load1.data.angles)) =sqrt( (mean(load1.data.errors) * (1-2*nu)/(2*(1-nu))*...
-%             norm(ObjectiveCoordTransform(lat, allfits(i).ijk))/2/pi)^2 );
-%         error2(1:length(load2.data.angles)) =sqrt( (mean(load2.data.errors) * (1-2*nu)/(2*(1-nu))*...
-%             norm(ObjectiveCoordTransform(lat, allfits(i).ijk))/2/pi)^2 );
-%         error3(1:length(load3.data.angles)) =sqrt( (mean(load3.data.errors) * (1-2*nu)/(2*(1-nu))*...
-%             norm(ObjectiveCoordTransform(lat, allfits(i).ijk))/2/pi)^2 );
        
         
         %Plot all the data with error bars
@@ -246,7 +231,7 @@ for i=1:125 %iterate through all the fits
         
         %If short boi save figure to a file before annotating
         if(blength - Burgers_ciel)<0.1
-            filename = ['Unproc-images/fit2 ' num2str(allfits(i).ijk) '.png'];
+            filename = [UnprocDir '\fit2 ' num2str(allfits(i).ijk) '.png'];
             saveas(gcf, filename); 
         end
              

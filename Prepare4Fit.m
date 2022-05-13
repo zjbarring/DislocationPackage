@@ -22,7 +22,7 @@ if(clustering==0) %So we can easily skip if the as grabbed data is periodic and 
     return %we don't need to perform clustering if data is already good, so exit
 end
 
-idx = clusterdata(dataMatrix, clustering);
+idx = clusterdata(dataMatrix, 'distance', 'cityblock', 'maxclust', clustering);
 
 numClusters = max(idx);
 
@@ -68,9 +68,8 @@ if totalTrend<=0
         
         outputs.values = [outputs.values; data.values(idx==B(i))];
         
-        if i~=1 && clusterMeanAng(B(i))>clusterMeanAng(B(i-1))
+        if i~=1 && clusterMeanAng(B(i))<clusterMeanAng(B(i-1))
             outputs.angles = [outputs.angles; (data.angles(idx==B(i))+2*pi)];
-            data.angles(idx==B(i)) = data.angles(idx==B(i))+2*pi;
         else
             outputs.angles = [outputs.angles; data.angles(idx==B(i))];
         end
