@@ -3,15 +3,17 @@ close all; clear
 
 %% Define variables
 
+dataDir = 'Dislocation Fitting Data\BWO_333\'; %Location the data is stored
+
 %integer location of the dislocation core in question. Used to access
-%correct fitting data saved in \Dislocation Fitting Data\BWO_333\##_##_##_[2-4].mat
+%correct fitting data saved in dataDir+##_##_##_[2-4].mat
 x_loc = 72;
 y_loc = 62;
 z_loc = 61;
 
 %Shortens the Burgers vector by this factor, ie turning a[111] to a/3[111]
 %Graphically the slope is ~1/prefactor
-prefactor = 4;
+prefactor = 6;
 
 %Define lattice and reciprocal lattice - Currently the conventional GaAs cell
 %Use the lattice used to index the reflecitons
@@ -22,7 +24,7 @@ lat.alpha = pi/2;
 lat.beta = pi/2;
 lat.gamma = pi/2;
 
-nu =0.4; %Poisson's ratio of the material
+nu =0.5; %Poisson's ratio of the material
 
 recip = ReciprocalTransform(lat);
 
@@ -30,7 +32,7 @@ G_hkl = recip.c*6;%Reciprocal lattice vector from scattering; only direction mat
 
 %load in Data for fitting - Use concentric circle plots around a
 %dislocation. The script is currently written for phase maps.
-load1 = load(strcat('Dislocation Fitting Data\BWO_333\',int2str(x_loc),'_',...
+load1 = load(strcat(datDir,int2str(x_loc),'_',...
     int2str(y_loc),'_',int2str(z_loc),'_2'));
 load2 = load(strcat('Dislocation Fitting Data\BWO_333\',int2str(x_loc),'_',...
     int2str(y_loc),'_',int2str(z_loc),'_3'));
@@ -47,7 +49,7 @@ data.values = data.values/2/pi*2.85;
 %Now parameter that can be tweaked for fitting, depending on other data
 %available
 
-Dsl_Line = [1 1 0]; %Dislocation line, normalized later in the script
+Dsl_Line = [-1 1 0]; %Dislocation line, normalized later in the script
  
 Burgers_ciel = 10; %Maximum allowed Burger vector length, used to favor low energy dislocations
 
@@ -61,8 +63,14 @@ YRange = [-2,2];
 %Enable or disable error bars
 ErrBars = boolean(false);
 
-UnprocDir = 'Dislocation Fitting Data\BWO_333\Unproc-images';
+unprocDir = 'Dislocation Fitting Data\BWO_333\Unproc-images\';%Directory to store images
+unprocDir = strcat(unprocDir,int2str(x_loc),'_',int2str(y_loc),...
+    '_',int2str(z_loc),'\'); %Append with dataset being investigated
+[~] = mkdir(); %Create Directory to store images for this location if it doesn't exist
+delete([unprocDir, '*']); %Empty directory of files form previous runs
 
+save([unprocDir, 'params']); %Save variables in a file for reference 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Function edit change begin%%%%%%%%%
 
 
 %% Setup - Most edited variable are above this point
@@ -247,8 +255,8 @@ for i=1:125 %iterate through all the fits
         str3 = sprintf('\n %s = %0.3f   (%0.3f   %0.3f)',coeffs{3},coeffvals(3),ci(:,3));
         str4 = sprintf('\n Burgers Vector Length = %0.3f', blength);
         str5 = sprintf('\n RMSE of Fit = %0.3f', tempgof.rmse);
-        annotation('textbox',[.15 .5 .7 .4],'String',...
-            ['Coefficients (with 95% confidence bounds): ', str1, str2, str3, str4, str5], 'EdgeColor', 'none');
+%         annotation('textbox',[.15 .5 .7 .4],'String',...
+%             ['Coefficients (with 95% confidence bounds): ', str1, str2, str3, str4, str5], 'EdgeColor', 'none');
 %         allfits(i).ijk
 %         allfits(i).gof
         
