@@ -5,16 +5,19 @@ function [pixel_objective] = bruteforce3(dataset, threshold)
 
 global ampmask phasedata uncertainty_width
 
-load(dataset)
+S = load(dataset);
 uncertainty_width = 1;
+varName = fieldnames(S);
 
-crystal = abs(complexRho_GaAs);
+complexCrystal = S.(varName{1});
+
+crystal = abs(complexCrystal);
 
 [lenx,leny,numSlides] = size(crystal);
 
-%ampmask = (abs(crystal)>=threshold);
-ampmask = shrink_wrap(crystal, threshold, 1,'gauss');
-phasedata = angle(complexRho_GaAs).*ampmask;
+ampmask = (abs(crystal)>=threshold);
+%ampmask = shrink_wrap(crystal, threshold, 1,'gauss');
+phasedata = angle(complexCrystal).*ampmask;
 
 pixel_objective = zeros(lenx,leny,numSlides);
 
